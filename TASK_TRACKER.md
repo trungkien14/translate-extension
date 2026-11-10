@@ -6,7 +6,7 @@ IMPORTANT: As of 2026-11-10 NOTHING has been loaded or run in Brave. `[x]` below
 desk-reviewed", NOT "verified in the browser". Verification is tracked in section 9.
 
 ## 1. Foundation
-- [x] manifest.json (MV3, minimal permissions: storage, offscreen; fixed host permissions for 3 APIs; optional https/http origins for self-hosted LibreTranslate)
+- [x] manifest.json (MV3, minimal permissions: storage, offscreen; fixed host permissions for MyMemory, dictionaryapi.dev and Gemini; no optional host permissions)
 - [x] shared/constants.js, languages.js, storage.js, tokens.css
 - [x] docs/DESIGN_SYSTEM.md
 
@@ -15,7 +15,7 @@ desk-reviewed", NOT "verified in the browser". Verification is tracked in sectio
 - [x] translate.js (detect -> provider -> chunk -> history, small memo cache)
 - [x] detect.js (script heuristics + chrome.i18n.detectLanguage)
 - [x] chunk.js (500-byte chunking for MyMemory)
-- [x] providers/http.js, index.js, mymemory.js, libretranslate.js, google.js
+- [x] providers/http.js, index.js, mymemory.js, gemini.js (google.js, microsoft.js, libretranslate.js removed from the app 2026-11-10; files still on disk, delete manually)
 - [x] dictionary.js (dictionaryapi.dev, English only)
 - [x] audio.js + offscreen/ (recorded dictionary audio)
 
@@ -43,18 +43,21 @@ desk-reviewed", NOT "verified in the browser". Verification is tracked in sectio
 ## 5c. API key security (2026-11-10) — code written, NOT run
 - [x] Passphrase encryption, session unlock, write-only key fields, http guard, LOCKED handling
 - [ ] Run the checklist in docs/SECURITY.md (encrypt, restart, unlock, wrong passphrase, remove encryption, wipe)
-- [ ] Re-verify provider Save buttons (LibreTranslate/Google/Gemini/Microsoft) after the write-only change
+- [ ] Re-verify the Gemini Save button after the write-only change
 
 ## 5d. Key convenience + speed (2026-11-10) — checked by hand by the user in Brave
 - [x] "Remember on this device" (storage.js, options)
-- [x] Google key sent in `X-goog-api-key` header instead of URL
 - [x] Parallel chunk translation (up to 3) in translate.js
 - [x] Gemini thinking minimised (gemini.js)
-- [ ] Not recorded as verified: Google Translate with a real key after the header change; Microsoft/LibreTranslate; the full docs/SECURITY.md checklist
+
+## 5e. Providers reduced to MyMemory + Gemini (2026-11-10) — syntax + mock tests only, NOT run in Brave
+- [x] Registry, options UI, constants, manifest, secrets pruning, fallback of a stale provider setting
+- [ ] Verify in Brave: Settings shows only MyMemory and Gemini; no console errors on the options page; Test connection works for both; an old stored provider falls back to MyMemory
+- [ ] Delete background/providers/google.js, microsoft.js, libretranslate.js manually (assistant has no delete tool)
 
 ## 6. Missing / to do
 - [ ] Extension icons (PNG 16/48/128) + `icons` and `action.default_icon` in manifest (needs PNG files; text tools cannot create binaries)
-- [x] Microsoft Translator provider written (docs researched; NOT run). [ ] Verify with a real Azure key: translation, auto-detect field, Chinese codes, regional key error
+- [x] Provider code for Gemini and Microsoft was written earlier; Microsoft has since been removed (see 5e).
 - [ ] Consider context-aware translation (send surrounding sentence) to improve phrase quality
 - [ ] Alternative pronunciation provider beyond browser TTS (architecture is ready: BT.pronunciation.register)
 - [ ] Support for file:// pages (manifest currently matches only http/https)
@@ -88,7 +91,7 @@ desk-reviewed", NOT "verified in the browser". Verification is tracked in sectio
 - [ ] 16. Original pronunciation
 - [ ] 17. Translated pronunciation
 - [ ] 18. Offline error state + Retry
-- [ ] 19. Invalid/missing credentials (Google key wrong, LibreTranslate not configured)
+- [ ] 19. Invalid/missing credentials (Gemini key wrong / not configured)
 - [ ] 20. Restart Brave: settings + history persist
 - [ ] 21. Popup: translate box + history reopen/copy/remove/clear
 - [ ] 22. Options: every control persists; Test connection works

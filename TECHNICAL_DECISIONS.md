@@ -34,13 +34,11 @@ Decisions marked **LOCKED** should not be reversed without a strong, written rea
    ~50,000 with `de` email. No language auto-detect used -> local detection (detect.js). Quality is "translation memory"
    quality; can return noisy results. This is a convenience default, not a commercial-grade recommendation.
 9b. translate.js sends up to 3 chunks concurrently (order preserved). Safe because providers with chunking (MyMemory) get a concrete source language; with source 'auto' and several chunks the first goes alone.
-10. LibreTranslate: only free when self-hosted; libretranslate.com needs a paid key. Server URL is user-supplied, so
-    its origin is requested at runtime via `optional_host_permissions` (chrome.permissions.request from options page).
-11. Google Cloud Translation Basic v2: requires billing-enabled project; key stored locally by user. Never in source. Key is sent in the `X-goog-api-key` header, not the URL (not re-verified with a live call by the assistant).
-12. Microsoft Translator (Azure AI Translator v3.0): implemented in background/providers/microsoft.js. Verified from Microsoft Learn: POST
-    api.cognitive.microsofttranslator.com/translate?api-version=3.0&to=..; headers Ocp-Apim-Subscription-Key (+ Ocp-Apim-Subscription-Region, required
-    for regional resources); body [{"Text":..}]. Pricing page lists free F0 = 2M chars/month (one third-party source says the free period may be
-    limited to 12 months: re-check at signup). NOT verified by a live call: detectedLanguage field, zh-Hans/zh-Hant codes. Key + region are in `secrets`.
+9c. saveSecrets() keeps only the fields in BT.DEFAULT_SECRETS (mymemoryEmail, geminiKey): stale secrets of removed providers are dropped on the next save.
+10. REMOVED 2026-11-10 — LibreTranslate (the provider is no longer in the registry, UI or manifest; only 2 providers are kept: MyMemory and Gemini).
+11. REMOVED 2026-11-10 — Google Cloud Translation v2 (same; its notes about the `X-goog-api-key` header no longer apply).
+12. REMOVED 2026-11-10 — Microsoft Translator.
+    Unreferenced leftovers: background/providers/google.js, microsoft.js, libretranslate.js (delete manually). To bring a provider back, re-add it to providers/index.js, options, constants and manifest hosts.
 12b. Gemini (Google AI Studio): providers/gemini.js. REST format verified from ai.google.dev docs. Free tier / no card / data-use-for-improvement verified only via
     third-party summaries + a pricing-page excerpt: re-check on ai.google.dev. Model name is user-editable because it changes. autoDetect=false (local detection).
     Prompt treats page text as data, not instructions; output shown with textContent only. Thinking is minimised for speed: `thinkingLevel: minimal` (gemini-3*), `thinkingBudget: 0` (gemini-2.5-flash*), nothing for other models; one retry without it on HTTP 400 mentioning thinking.
@@ -70,7 +68,7 @@ Decisions marked **LOCKED** should not be reversed without a strong, written rea
     "Show more" clamp for long originals).
 
 ## Permissions
-21. `storage`, `offscreen` only. Fixed host permissions for the three known API hosts. No `tabs`, no `activeTab`, no
+21. `storage`, `offscreen` only. Fixed host permissions for the three known API hosts (MyMemory, dictionaryapi.dev, Gemini). No `optional_host_permissions`, no `tabs`, no `activeTab`, no
     `<all_urls>` host permission. Content script matches http/https only.
 
 ## Known limitations

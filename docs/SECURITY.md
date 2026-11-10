@@ -6,7 +6,7 @@ Status: implemented 2026-11-10; the user hand-checked encryption, unlock and "Re
 | Measure | Where | Notes |
 |---|---|---|
 | No keys in source code | whole project | keys are entered by the user in Settings |
-| Keys never leave the browser except to their own provider | background/providers/* | endpoints are hardcoded; LibreTranslate uses the user's URL and refuses to send a key over plain http (except localhost) |
+| Keys never leave the browser except to their own provider | background/providers/* | endpoints are hardcoded (MyMemory, Gemini); the Gemini key goes in the `x-goog-api-key` header |
 | Network calls only from the service worker | background/ | content scripts and pages never see keys |
 | Keys kept apart from settings | storage keys `secrets` / `secretsEnc` | content scripts read only `settings` |
 | Optional passphrase encryption (AES-GCM-256, PBKDF2-SHA256, 600k iterations, random salt/IV) | shared/storage.js | plaintext `secrets` is deleted after the encrypted copy is written |
@@ -15,6 +15,7 @@ Status: implemented 2026-11-10; the user hand-checked encryption, unlock and "Re
 | Sender check | background/service-worker.js | ignores messages not from this extension; no message type returns secrets |
 | No secrets in errors/logs | providers | error messages never include keys |
 | Sync not used | storage.local only | keys are not uploaded to a Google/Brave account |
+| Removed providers' keys are erased | shared/storage.js `saveSecrets` | only `mymemoryEmail` and `geminiKey` are kept; old Google/Microsoft/LibreTranslate keys disappear on the next save or via "Remove all saved keys" |
 | Optional "Remember on this device" (off by default) | shared/storage.js, options/ | stores the derived unlock key in `storage.local` (`secretsKeyRemembered`) so no passphrase is needed after restart; removed by "Lock now", wipe, remove-encryption or a failed decrypt |
 
 ## Honest limits
@@ -24,7 +25,7 @@ Status: implemented 2026-11-10; the user hand-checked encryption, unlock and "Re
 - Old plaintext may remain in the browser's LevelDB files until compaction after encrypting/removing keys.
 - A forgotten passphrase cannot be recovered (by design). "Remove all saved keys" wipes everything.
 - With "Remember on this device" on, the unlock key sits on disk next to the ciphertext and is readable by content scripts like the rest of `storage.local`: this only stops casual reading, not someone who copies the profile. Keep it off if that matters.
-- Keys are sent in headers (Google: `X-goog-api-key`, Gemini: `x-goog-api-key`, Microsoft: `Ocp-Apim-Subscription-Key`) or the request body (LibreTranslate), never in URLs.
+- The Gemini key is sent in a header (`x-goog-api-key`), never in a URL.
 - Provider-side safety (outside our control): use a dedicated key, set quotas/budget alerts, revoke on suspicion. Gemini free tier may use content to improve Google products.
 
 ## Verification checklist (to run in Brave)

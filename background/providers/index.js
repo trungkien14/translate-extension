@@ -3,12 +3,9 @@
  *   translate({text, source, target, config, secrets}) -> {text, detectedSource?, alternatives?} }
  * and register it here (+ a settings panel in options/). Throw ProviderError for failures. */
 import mymemory from './mymemory.js';
-import libretranslate from './libretranslate.js';
-import google from './google.js';
-import microsoft from './microsoft.js';
 import gemini from './gemini.js';
 
-const providers = [mymemory, libretranslate, google, microsoft, gemini];
+const providers = [mymemory, gemini];
 
 export function getProvider(id) {
   return providers.find((p) => p.id === id) || mymemory;

@@ -29,7 +29,7 @@ Test page ideas: en.wikipedia.org, a Vietnamese news site, ja/zh/ko Wikipedia pa
 16-17. Speaker buttons: original and translation. Needs an installed system voice for that language; otherwise an
    inline message says no voice is installed. Check Brave Shields does not hide voices.
 18. DevTools -> Network -> Offline (or disconnect), translate -> error with Retry; go online, Retry works.
-19. Options -> provider Google with a wrong key -> "Test connection" shows an auth error; LibreTranslate with no URL -> "not configured".
+19. Options -> provider Gemini with a wrong key -> "Test connection" shows an auth error; Gemini with no key -> "not configured".
 20. Fully quit and reopen Brave -> settings and history still present.
 
 ## Additional

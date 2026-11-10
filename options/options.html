@@ -52,9 +52,6 @@
         <select id="provider">
           <option value="mymemory">MyMemory — works without a key (default)</option>
           <option value="gemini">Gemini — free key from Google AI Studio, best for phrases</option>
-          <option value="libretranslate">LibreTranslate — your own server</option>
-          <option value="google">Google Cloud Translation — API key, billing required</option>
-          <option value="microsoft">Microsoft Translator — API key (Azure account)</option>
         </select>
       </div>
 
@@ -63,32 +60,12 @@
         <div class="field"><label for="mymemoryEmail">Email (optional)</label><input type="email" id="mymemoryEmail" autocomplete="off" placeholder="you@example.com"></div>
       </div>
 
-      <div class="provider-box" data-provider="libretranslate" hidden>
-        <p class="hint">LibreTranslate is free only when self-hosted. The public libretranslate.com needs a paid API key. Saving asks your browser for permission to contact the server.</p>
-        <div class="field"><label for="ltUrl">Server URL</label><input type="url" id="ltUrl" autocomplete="off" placeholder="http://localhost:5000"></div>
-        <div class="field"><label for="ltKey">API key (if your server requires one)</label><input type="password" id="ltKey" autocomplete="off"></div>
-        <button class="btn" id="ltSave" type="button">Save &amp; grant access</button>
-      </div>
-
-      <div class="provider-box" data-provider="google" hidden>
-        <p class="hint">Needs a Google Cloud project with billing enabled and the Cloud Translation API on. The key is stored only in this browser profile and is never read by web pages.</p>
-        <div class="field"><label for="googleKey">API key</label><input type="password" id="googleKey" autocomplete="off"></div>
-        <button class="btn" id="googleSave" type="button">Save key</button>
-      </div>
-
       <div class="provider-box" data-provider="gemini" hidden>
         <p class="hint">Create a key in Google AI Studio (aistudio.google.com → Get API key) with a normal Google account. Google lists a free tier without billing. Privacy: on the free tier, Google may use the text you send to improve its products. Do not translate confidential text with it.</p>
         <div class="field"><label for="gmKey">API key</label><input type="password" id="gmKey" autocomplete="off"></div>
         <div class="field"><label for="gmModel">Model</label><input type="text" id="gmModel" autocomplete="off" placeholder="gemini-3.5-flash"></div>
         <p class="hint">Model names change over time. If you see “model not found”, copy a current Flash model name from AI Studio.</p>
         <button class="btn" id="gmSave" type="button">Save</button>
-      </div>
-
-      <div class="provider-box" data-provider="microsoft" hidden>
-        <p class="hint">Create a Translator resource in the Azure portal (Microsoft's pricing page lists a free tier of 2 million characters per month; an Azure account is required). Copy its key here. If your resource is regional (not “Global”), also enter its region, e.g. southeastasia.</p>
-        <div class="field"><label for="msKey">API key</label><input type="password" id="msKey" autocomplete="off"></div>
-        <div class="field"><label for="msRegion">Region (leave empty for a global resource)</label><input type="text" id="msRegion" autocomplete="off" placeholder="southeastasia"></div>
-        <button class="btn" id="msSave" type="button">Save key</button>
       </div>
 
       <div class="test">

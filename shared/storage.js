@@ -102,7 +102,10 @@
     },
     async saveSecrets(patch) {
       const enc = await readEnc();
-      const next = { ...(await storage.getSecrets()), ...patch };
+      const merged = { ...(await storage.getSecrets()), ...patch };
+      // Keep only the fields that still exist: keys of removed providers (Google, Microsoft, LibreTranslate) are erased on the next save.
+      const next = {};
+      for (const k of Object.keys(BT.DEFAULT_SECRETS)) next[k] = merged[k] != null ? merged[k] : BT.DEFAULT_SECRETS[k];
       if (!enc) {
         await chrome.storage.local.set({ [KEYS.SECRETS]: next });
         return next;

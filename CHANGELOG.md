@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## 2026-11-10 — Providers reduced to MyMemory + Gemini (checked by the assistant with syntax + mock tests; not yet run in Brave)
+- Removed Google Cloud Translation, Microsoft Translator and LibreTranslate from the app: `background/providers/index.js` (registry), `options/options.html` + `options.js` (options, boxes, save handlers),
+  `shared/constants.js` (settings comment, `providerConfig.libretranslate`, secrets `libretranslateKey/googleKey/microsoftKey/microsoftRegion`), `manifest.json` (hosts for translation.googleapis.com and api.cognitive.microsofttranslator.com, and `optional_host_permissions`).
+- `shared/storage.js` `saveSecrets()` now keeps only the current secret fields, so old Google/Microsoft/LibreTranslate keys are erased from storage on the next save (or via "Remove all saved keys").
+- `options/options.js`: a stored provider that no longer exists falls back to MyMemory.
+- The files `background/providers/google.js`, `microsoft.js`, `libretranslate.js` are no longer imported by anything; they were NOT deleted by the assistant (no delete tool) — delete them manually.
+- Docs updated: README, docs/TESTING.md, docs/SECURITY.md, TECHNICAL_DECISIONS.md, TASK_TRACKER.md, DEVELOPMENT_STATUS.md.
+
 ## 2026-11-10 — Key convenience, Google key header, speed (checked by hand by the user in Brave)
 - `shared/storage.js`, `options/options.html`, `options/options.js`: optional **Remember on this device** — the derived unlock key is also kept in storage.local
   (`secretsKeyRemembered`) so no passphrase is needed after a restart. `lockSecrets()` (and wipe/disable/wrong-key) removes it. Trade-off documented in README and docs/SECURITY.md.

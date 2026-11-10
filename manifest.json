@@ -8,11 +8,8 @@
   "host_permissions": [
     "https://api.mymemory.translated.net/*",
     "https://api.dictionaryapi.dev/*",
-    "https://translation.googleapis.com/*",
-    "https://api.cognitive.microsofttranslator.com/*",
     "https://generativelanguage.googleapis.com/*"
   ],
-  "optional_host_permissions": ["https://*/*", "http://*/*"],
   "background": {
     "service_worker": "background/service-worker.js",
     "type": "module"

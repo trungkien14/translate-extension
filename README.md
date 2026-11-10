@@ -4,8 +4,9 @@ Select text on any web page, click the small floating button (or press **Alt+Shi
 compact modal — with the detected language, copy and pronunciation buttons, and, for English words, dictionary details
 (IPA, definitions, examples, synonyms).
 
-> Status: the API-key security, "Remember on this device", Google header, parallel chunking and Gemini low-thinking changes of 2026-11-10
-> were checked by hand in Brave by the user. The full scenario list in docs/TESTING.md has **not** been recorded as run. See DEVELOPMENT_STATUS.md.
+> Status: the API-key security, "Remember on this device", parallel chunking and Gemini low-thinking changes of 2026-11-10
+> were checked by hand in Brave by the user. The provider list was then reduced to MyMemory + Gemini (that change was checked by the assistant with syntax and mock tests only).
+> The full scenario list in docs/TESTING.md has **not** been recorded as run. See DEVELOPMENT_STATUS.md.
 
 ## Install (unpacked)
 1. Open `brave://extensions` and enable **Developer mode**.
@@ -26,37 +27,32 @@ compact modal — with the detected language, copy and pronunciation buttons, an
 |---|---|
 | "Your API keys are locked" | encrypted keys not unlocked this session: Settings -> Security of API keys -> passphrase -> Unlock |
 | "Wrong passphrase" | retype it; if forgotten, use Remove all saved keys |
-| "... is not configured" | no key saved for the selected provider |
-| Key rejected / denied | key wrong, restricted, API not enabled, or billing off; for Microsoft check the region |
+| "... is not configured" | no Gemini key saved while Gemini is selected |
+| Key rejected / denied | Gemini key wrong, restricted, or not allowed in your region |
 | Gemini "model not found" | copy a current Flash model name from AI Studio into the Model box |
-| Quota / rate limit | wait and retry, add an email for MyMemory, or switch provider |
+| Quota / rate limit | wait and retry, add an email for MyMemory, or switch between MyMemory and Gemini |
 | Translation feels slow | Gemini already runs with minimal thinking; try a lighter Flash model. Long text with MyMemory is split into pieces |
 | Nothing appears on a page | brave://, the Web Store, the PDF viewer and file:// pages are not supported; reload the page after reloading the extension |
 
 ## Translation providers
+Only two providers are supported: MyMemory (default, no key) and Gemini (free key). Google Cloud Translation, Microsoft Translator and LibreTranslate were removed on 2026-11-10.
+
 | Provider | Needs | Notes |
 |---|---|---|
 | MyMemory (default) | nothing | ~5,000 chars/day anonymously; ~50,000 with an email (Settings) |
-| LibreTranslate | your own server URL (+ key if required) | free only when self-hosted; Save asks for permission to that server |
-| Google Cloud Translation | API key, billing-enabled project | first 500k chars/month free (per Google pricing at time of research) |
 | Gemini (Google AI Studio) | free API key from aistudio.google.com, no billing card | best for phrases/idioms; free-tier data may be used by Google to improve its products |
-| Microsoft Translator | Azure Translator key (+ region if regional) | pricing page lists a free tier of 2M chars/month; Azure account required |
 
 ## Entering API keys
-MyMemory works with no key. The other providers need one. Open Settings first: `brave://extensions` -> Brave Translate -> Details -> Extension options (or the Settings link in the toolbar popup).
+MyMemory works with no key. Gemini needs one. Open Settings first: `brave://extensions` -> Brave Translate -> Details -> Extension options (or the Settings link in the toolbar popup).
 
-### 1. Get a key (only for the provider you want)
-- **Gemini** (suggested for phrases): sign in at aistudio.google.com -> Get API key. No billing card for the free tier; free-tier text may be used by Google to improve its products, so do not translate confidential text.
-- **Google Cloud Translation**: create a Cloud project with billing, enable the Cloud Translation API, create an API key (restrict it to that API in Cloud Console).
-- **Microsoft Translator**: in the Azure portal create a Translator resource, copy its key; if the resource is regional (not Global) note its region, e.g. `southeastasia`.
-- **LibreTranslate**: your own server URL (e.g. `http://localhost:5000`) and its key if the server requires one.
-
-Use a dedicated key, set a quota or budget alert at the provider, and revoke it there if you suspect a leak.
+### 1. Get a Gemini key
+Sign in at aistudio.google.com -> Get API key. No billing card for the free tier; free-tier text may be used by Google to improve its products, so do not translate confidential text.
+Use a dedicated key, set a quota or budget alert if offered, and revoke it in AI Studio if you suspect a leak.
 
 ### 2. Enter and save it
-1. In Settings -> **Translation provider**, choose the provider.
-2. Paste the key into its **API key** box (Microsoft: also the region; Gemini: optionally the model name; LibreTranslate: the server URL, then allow access when the browser asks).
-3. Press that provider's **Save** button. The box then shows "saved - type to replace"; saved keys are never displayed again.
+1. In Settings -> **Translation provider**, choose **Gemini**.
+2. Paste the key into the **API key** box (optionally change the **Model** name).
+3. Press **Save**. The box then shows "saved - type to replace"; saved keys are never displayed again.
 4. Press **Test connection**. A green result means it works. To replace a key, just type a new one and Save.
 
 ### 3. Protect it with a passphrase (recommended)
@@ -85,7 +81,7 @@ unencrypted until you encrypt them as above. See docs/SECURITY.md for what this 
 Speed: Gemini runs with thinking set to the minimum (`minimal` on Gemini 3.x, budget 0 on 2.5 Flash). If it is still slow, try a
 lighter Flash model name in Settings. MyMemory splits long text into 500-byte pieces and sends up to 3 at a time.
 
-MyMemory is convenient but is a translation-memory service: results for phrases and idioms are often poor. For better quality use Microsoft or Google.
+MyMemory is convenient but is a translation-memory service: results for phrases and idioms are often poor. Gemini gives better phrase and idiom quality.
 
 ## Privacy
 Selected text is sent only to the provider you choose (and to api.dictionaryapi.dev for English word lookups). History

@@ -22,9 +22,8 @@
     sourceLang: 'auto', // used only when autoDetect === false
     targetLang: 'vi',
     theme: 'system', // system | light | dark
-    provider: 'mymemory', // mymemory | libretranslate | google
+    provider: 'mymemory', // mymemory | gemini
     providerConfig: {
-      libretranslate: { url: '' }, // non-secret; API key lives in secrets
       gemini: { model: 'gemini-3.5-flash' } // model names change; user-editable
     },
     tts: { voices: {}, rate: 1 }, // voices: { en: voiceURI, ... }
@@ -33,5 +32,5 @@
   };
 
   // Secrets are kept in a separate key so content scripts never read them.
-  BT.DEFAULT_SECRETS = { mymemoryEmail: '', libretranslateKey: '', googleKey: '', microsoftKey: '', microsoftRegion: '', geminiKey: '' };
+  BT.DEFAULT_SECRETS = { mymemoryEmail: '', geminiKey: '' };
 })();

@@ -74,46 +74,12 @@
       input.value = '';
       input.placeholder = s === null ? 'Locked \u2014 unlock under Security below' : has ? '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022 saved \u2014 type to replace' : input.dataset.ph;
     };
-    mask('ltKey', s && s.libretranslateKey);
-    mask('googleKey', s && s.googleKey);
     mask('gmKey', s && s.geminiKey);
-    mask('msKey', s && s.microsoftKey);
     $('mymemoryEmail').value = (s && s.mymemoryEmail) || '';
     $('gmModel').value = (settings.providerConfig.gemini && settings.providerConfig.gemini.model) || '';
-    $('msRegion').value = (s && s.microsoftRegion) || '';
-    $('ltUrl').value = (settings.providerConfig.libretranslate && settings.providerConfig.libretranslate.url) || '';
   }
 
   function validEmail(v) { return !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
-
-  async function saveLibre() {
-    const raw = $('ltUrl').value.trim();
-    let origin = null;
-    try {
-      const u = new URL(raw);
-      if (u.protocol !== 'http:' && u.protocol !== 'https:') throw new Error('bad');
-      origin = u.origin + '/*';
-    } catch (e) {
-      toast('Enter a valid server URL, e.g. http://localhost:5000');
-      return;
-    }
-    let granted = false;
-    try { granted = await chrome.permissions.request({ origins: [origin] }); } catch (e) { granted = false; }
-    if (!granted) { toast('Access to that server was not granted.'); return; }
-    await save({ providerConfig: { libretranslate: { url: raw } } }, true);
-    const ltKey = $('ltKey').value.trim();
-    if (ltKey) await BT.storage.saveSecrets({ libretranslateKey: ltKey });
-    await loadSecretsIntoForm();
-    toast('LibreTranslate saved');
-  }
-
-  async function saveGoogle() {
-    const k = $('googleKey').value.trim();
-    if (!k) { toast('Type a key to save it.'); return; }
-    await BT.storage.saveSecrets({ googleKey: k });
-    await loadSecretsIntoForm();
-    toast('API key saved');
-  }
 
   async function saveGemini() {
     const model = $('gmModel').value.trim() || 'gemini-3.5-flash';
@@ -123,15 +89,6 @@
     await save({ providerConfig: { gemini: { model } } }, true);
     await loadSecretsIntoForm();
     toast('Gemini settings saved');
-  }
-
-  async function saveMicrosoft() {
-    const patch = { microsoftRegion: $('msRegion').value.trim() };
-    const k = $('msKey').value.trim();
-    if (k) patch.microsoftKey = k;
-    await BT.storage.saveSecrets(patch);
-    await loadSecretsIntoForm();
-    toast('Microsoft settings saved');
   }
 
   async function testProvider() {
@@ -286,6 +243,10 @@
     $('enabled').checked = settings.enabled;
     $('theme').value = settings.theme;
     $('provider').value = settings.provider;
+    if (!$('provider').value) { // a provider that was removed (Google, Microsoft, LibreTranslate): fall back to MyMemory
+      $('provider').value = 'mymemory';
+      save({ provider: 'mymemory' }, true);
+    }
     $('rate').value = settings.tts.rate;
     $('rateOut').textContent = Number(settings.tts.rate).toFixed(1) + '×';
     $('histEnabled').checked = settings.history.enabled;
@@ -327,9 +288,6 @@
     });
     // Wrap so a locked/failed save shows a message instead of failing silently.
     const safe = (fn) => async () => { try { await fn(); } catch (err) { toast(err.message || 'Something went wrong.'); } };
-    $('ltSave').addEventListener('click', safe(saveLibre));
-    $('googleSave').addEventListener('click', safe(saveGoogle));
-    $('msSave').addEventListener('click', safe(saveMicrosoft));
     $('gmSave').addEventListener('click', safe(saveGemini));
 
     renderSecurity();
