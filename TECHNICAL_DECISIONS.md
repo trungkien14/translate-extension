@@ -21,6 +21,9 @@ Decisions marked **LOCKED** should not be reversed without a strong, written rea
    Secrets are in a separate key and are read only by the worker and options page. Content scripts read only `settings`
    (content scripts can technically read all of storage.local; the separation limits accidental exposure, it is not a
    security boundary — documented honestly in README).
+7b. **LOCKED — API key protection:** optional passphrase encryption (AES-GCM + PBKDF2-SHA256 600k) in shared/storage.js; ciphertext in `secretsEnc`,
+    unlock key only in chrome.storage.session; locked state throws code `LOCKED` (MyMemory still works). Key inputs are write-only. Full threat model: docs/SECURITY.md.
+    Do NOT move secrets to storage.sync. Do NOT show saved keys back in the UI.
 8. History: newest first, de-duplicated by (text, target), capped by `settings.history.limit` (default 200).
    Saved by the worker when `save:true`. Text only goes to the selected provider, never elsewhere.
 
@@ -35,6 +38,9 @@ Decisions marked **LOCKED** should not be reversed without a strong, written rea
     api.cognitive.microsofttranslator.com/translate?api-version=3.0&to=..; headers Ocp-Apim-Subscription-Key (+ Ocp-Apim-Subscription-Region, required
     for regional resources); body [{"Text":..}]. Pricing page lists free F0 = 2M chars/month (one third-party source says the free period may be
     limited to 12 months: re-check at signup). NOT verified by a live call: detectedLanguage field, zh-Hans/zh-Hant codes. Key + region are in `secrets`.
+12b. Gemini (Google AI Studio): providers/gemini.js. REST format verified from ai.google.dev docs. Free tier / no card / data-use-for-improvement verified only via
+    third-party summaries + a pricing-page excerpt: re-check on ai.google.dev. Model name is user-editable because it changes. autoDetect=false (local detection).
+    Prompt treats page text as data, not instructions; output shown with textContent only.
 13. Dictionary: Free Dictionary API (api.dictionaryapi.dev), English only, keyless, rate-limited, sometimes unreliable.
     UI shows dictionary details only for English words (or for the English translation of a single foreign word).
     It supplies IPA, definitions, examples, synonyms, and some recorded audio. It does NOT provide translations.

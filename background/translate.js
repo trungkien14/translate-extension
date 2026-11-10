@@ -29,8 +29,15 @@ export async function translate({ text, source, target, save = false, providerId
   if (clean.length > BT.MAX_SELECTION_CHARS) { clean = clean.slice(0, BT.MAX_SELECTION_CHARS); truncated = true; }
 
   const settings = await BT.storage.getSettings();
-  const secrets = await BT.storage.getSecrets();
   const provider = getProvider(providerId || settings.provider);
+  let secrets;
+  try {
+    secrets = await BT.storage.getSecrets();
+  } catch (e) {
+    // Locked keys must not block the keyless default provider.
+    if (e && e.code === 'LOCKED' && provider.id === 'mymemory') secrets = { ...BT.DEFAULT_SECRETS };
+    else throw e;
+  }
   const config = (settings.providerConfig && settings.providerConfig[provider.id]) || {};
   target = target || settings.targetLang;
   source = source || (settings.autoDetect ? 'auto' : settings.sourceLang || 'auto');
@@ -61,19 +68,23 @@ export async function translate({ text, source, target, save = false, providerId
   if (!out) {
     const maxBytes = provider.capabilities.maxBytes;
     const chunks = chunkText(clean, maxBytes);
-    const parts = [];
-    let alternatives = [];
+    // Chunks are independent, so run up to 3 at once (was one after another: N chunks = N round trips).
+    const rs = new Array(chunks.length);
     let providerDetected = null;
     let srcForChunks = effectiveSource;
-    for (const chunk of chunks) {
-      const r = await provider.translate({ text: chunk, source: srcForChunks, target, config, secrets });
-      parts.push(r.text);
-      if (!providerDetected && r.detectedSource) {
-        providerDetected = BT.normalizeLang(r.detectedSource);
-        if (srcForChunks === 'auto') srcForChunks = providerDetected; // keep later chunks consistent
-      }
-      if (chunks.length === 1) alternatives = r.alternatives || [];
+    const call = async (i) => { rs[i] = await provider.translate({ text: chunks[i], source: srcForChunks, target, config, secrets }); };
+    let start = 0;
+    if (srcForChunks === 'auto' && chunks.length > 1) { // the first reply fixes the source language for the rest
+      await call(0);
+      start = 1;
+      if (rs[0].detectedSource) { providerDetected = BT.normalizeLang(rs[0].detectedSource); srcForChunks = providerDetected; }
     }
+    let next = start;
+    const worker = async () => { while (next < chunks.length) await call(next++); };
+    await Promise.all(Array.from({ length: Math.min(3, chunks.length - start) }, worker));
+    for (const r of rs) if (!providerDetected && r.detectedSource) providerDetected = BT.normalizeLang(r.detectedSource);
+    const parts = rs.map((r) => r.text);
+    const alternatives = chunks.length === 1 ? rs[0].alternatives || [] : [];
     const joiner = BT.isCJK(target) ? '' : ' ';
     out = {
       translation: parts.join(joiner).trim(),

@@ -9,8 +9,14 @@ import { ProviderError } from './providers/http.js';
 
 const BT = globalThis.BT;
 
+// Keep the unlock key (storage.session) out of content scripts. This is also the documented default.
+try {
+  Promise.resolve(chrome.storage.session.setAccessLevel({ accessLevel: 'TRUSTED_CONTEXTS' })).catch(() => {});
+} catch (e) { /* older browsers */ }
+
 function toError(e) {
   if (e instanceof ProviderError) return { code: e.code, message: e.message, retryable: e.retryable };
+  if (e && e.code === 'LOCKED') return { code: 'LOCKED', message: e.message, retryable: false };
   return { code: 'UNKNOWN', message: (e && e.message) || 'Something went wrong.', retryable: true };
 }
 

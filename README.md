@@ -23,10 +23,12 @@ compact modal — with the detected language, copy and pronunciation buttons, an
 | MyMemory (default) | nothing | ~5,000 chars/day anonymously; ~50,000 with an email (Settings) |
 | LibreTranslate | your own server URL (+ key if required) | free only when self-hosted; Save asks for permission to that server |
 | Google Cloud Translation | API key, billing-enabled project | first 500k chars/month free (per Google pricing at time of research) |
+| Gemini (Google AI Studio) | free API key from aistudio.google.com, no billing card | best for phrases/idioms; free-tier data may be used by Google to improve its products |
 | Microsoft Translator | Azure Translator key (+ region if regional) | pricing page lists a free tier of 2M chars/month; Azure account required |
 
-Keys are stored in `chrome.storage.local` of your browser profile; they are not in the source code. Extension storage is
-not encrypted, so restrict the Google key in Cloud Console.
+Keys are stored in `chrome.storage.local` of your browser profile; they are not in the source code. By default they are
+unencrypted: in Settings → "Security of API keys" you can encrypt them with a passphrase (unlock once per browser session).
+See docs/SECURITY.md for what this does and does not protect. Saved keys are never displayed again in Settings.
 
 MyMemory is convenient but is a translation-memory service: results for phrases and idioms are often poor. For better quality use Microsoft or Google.
 

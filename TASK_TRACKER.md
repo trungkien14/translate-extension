@@ -40,6 +40,11 @@ desk-reviewed", NOT "verified in the browser". Verification is tracked in sectio
 - [ ] Verify: repeat lookup does not duplicate; toggle off stops saving; Remove / Clear all / Export CSV work
 - [ ] Optional follow-ups: Anki export, search box in the list, Notion/Sheets sync (needs OAuth/API research first)
 
+## 5c. API key security (2026-11-10) — code written, NOT run
+- [x] Passphrase encryption, session unlock, write-only key fields, http guard, LOCKED handling
+- [ ] Run the checklist in docs/SECURITY.md (encrypt, restart, unlock, wrong passphrase, remove encryption, wipe)
+- [ ] Re-verify provider Save buttons (LibreTranslate/Google/Gemini/Microsoft) after the write-only change
+
 ## 6. Missing / to do
 - [ ] Extension icons (PNG 16/48/128) + `icons` and `action.default_icon` in manifest (needs PNG files; text tools cannot create binaries)
 - [x] Microsoft Translator provider written (docs researched; NOT run). [ ] Verify with a real Azure key: translation, auto-detect field, Chinese codes, regional key error

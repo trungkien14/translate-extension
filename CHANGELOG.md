@@ -14,6 +14,19 @@
 - `background/detect.js`: 1-2 word Latin text is trusted only if chrome.i18n reports it reliable, else English ("challenges" was detected as Dutch).
 - `background/providers/mymemory.js`: alternatives limited to inputs of <=4 words and to short, similar-length results (unrelated long TM sentences were shown).
 
+## 2026-11-10 — API key security hardening (not yet run)
+- `shared/storage.js`: optional passphrase encryption of secrets (AES-GCM-256, PBKDF2-SHA256 600k), unlock key in storage.session; new API secretsState/enableSecretsLock/unlockSecrets/lockSecrets/disableSecretsLock/wipeSecrets; getSecrets throws code LOCKED when locked.
+- `shared/constants.js` KEYS.SECRETS_ENC; `background/service-worker.js` (LOCKED error mapping, session access level TRUSTED_CONTEXTS); `background/translate.js` (locked keys do not block MyMemory);
+  `background/providers/libretranslate.js` (refuse to send key over plain http except localhost); `content/ui.js` (Open settings button on LOCKED).
+- `options/*`: "Security of API keys" panel; key fields are write-only (saved keys never shown again); saves wrapped with error toasts.
+- New `docs/SECURITY.md` (measures, honest limits, verification checklist).
+
+## 2026-11-10 — Gemini provider (not yet run)
+- New `background/providers/gemini.js` (Google AI Studio key, no billing card; LLM translation for phrases/idioms). Model name is a setting.
+- manifest host permission generativelanguage.googleapis.com; secret `geminiKey`; settings.providerConfig.gemini.model; Settings UI box.
+- Reason: user has no Azure subscription; MyMemory quality is poor for phrases.
+- Privacy caveat shown in UI: free-tier prompts may be used by Google to improve products.
+
 ## 2026-11-10 — Microsoft Translator provider + modal language-select fix (not yet run)
 - New `background/providers/microsoft.js`, registered in providers/index.js; manifest host permission for api.cognitive.microsofttranslator.com;
   secrets `microsoftKey`/`microsoftRegion`; Settings provider option + key/region fields.

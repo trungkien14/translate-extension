@@ -65,12 +65,22 @@
   }
 
   async function loadSecretsIntoForm() {
-    const s = await BT.storage.getSecrets();
-    $('mymemoryEmail').value = s.mymemoryEmail || '';
-    $('ltKey').value = s.libretranslateKey || '';
-    $('googleKey').value = s.googleKey || '';
-    $('msKey').value = s.microsoftKey || '';
-    $('msRegion').value = s.microsoftRegion || '';
+    let s = null;
+    try { s = await BT.storage.getSecrets(); } catch (e) { s = null; } // null = locked
+    // Key fields are write-only: a saved key is never put back into the page.
+    const mask = (id, has) => {
+      const input = $(id);
+      if (!input.dataset.ph) input.dataset.ph = input.placeholder || '';
+      input.value = '';
+      input.placeholder = s === null ? 'Locked \u2014 unlock under Security below' : has ? '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022 saved \u2014 type to replace' : input.dataset.ph;
+    };
+    mask('ltKey', s && s.libretranslateKey);
+    mask('googleKey', s && s.googleKey);
+    mask('gmKey', s && s.geminiKey);
+    mask('msKey', s && s.microsoftKey);
+    $('mymemoryEmail').value = (s && s.mymemoryEmail) || '';
+    $('gmModel').value = (settings.providerConfig.gemini && settings.providerConfig.gemini.model) || '';
+    $('msRegion').value = (s && s.microsoftRegion) || '';
     $('ltUrl').value = (settings.providerConfig.libretranslate && settings.providerConfig.libretranslate.url) || '';
   }
 
@@ -91,18 +101,37 @@
     try { granted = await chrome.permissions.request({ origins: [origin] }); } catch (e) { granted = false; }
     if (!granted) { toast('Access to that server was not granted.'); return; }
     await save({ providerConfig: { libretranslate: { url: raw } } }, true);
-    await BT.storage.saveSecrets({ libretranslateKey: $('ltKey').value.trim() });
+    const ltKey = $('ltKey').value.trim();
+    if (ltKey) await BT.storage.saveSecrets({ libretranslateKey: ltKey });
+    await loadSecretsIntoForm();
     toast('LibreTranslate saved');
   }
 
   async function saveGoogle() {
-    await BT.storage.saveSecrets({ googleKey: $('googleKey').value.trim() });
+    const k = $('googleKey').value.trim();
+    if (!k) { toast('Type a key to save it.'); return; }
+    await BT.storage.saveSecrets({ googleKey: k });
+    await loadSecretsIntoForm();
     toast('API key saved');
   }
 
+  async function saveGemini() {
+    const model = $('gmModel').value.trim() || 'gemini-3.5-flash';
+    if (!/^[A-Za-z0-9._-]+$/.test(model)) { toast('That model name looks invalid.'); return; }
+    const k = $('gmKey').value.trim();
+    if (k) await BT.storage.saveSecrets({ geminiKey: k });
+    await save({ providerConfig: { gemini: { model } } }, true);
+    await loadSecretsIntoForm();
+    toast('Gemini settings saved');
+  }
+
   async function saveMicrosoft() {
-    await BT.storage.saveSecrets({ microsoftKey: $('msKey').value.trim(), microsoftRegion: $('msRegion').value.trim() });
-    toast('Microsoft key saved');
+    const patch = { microsoftRegion: $('msRegion').value.trim() };
+    const k = $('msKey').value.trim();
+    if (k) patch.microsoftKey = k;
+    await BT.storage.saveSecrets(patch);
+    await loadSecretsIntoForm();
+    toast('Microsoft settings saved');
   }
 
   async function testProvider() {
@@ -182,6 +211,32 @@
           el('div', { class: 'h-meta', text: `${BT.langName(e.source)} → ${BT.langName(e.target)} · ${new Date(e.ts).toLocaleString()}` })),
         copyBtn, delBtn));
     }
+  }
+
+  /* ---------- Security of API keys ---------- */
+  async function renderSecurity() {
+    const st = await BT.storage.secretsState();
+    const show = (id, on) => { $(id).hidden = !on; };
+    show('secPassField', true);
+    show('secPass2Field', !st.encrypted);
+    show('secRememberField', !st.encrypted || !st.unlocked);
+    show('secEnable', !st.encrypted);
+    show('secUnlock', st.encrypted && !st.unlocked);
+    show('secLock', st.encrypted && st.unlocked);
+    show('secDisable', st.encrypted);
+    $('secState').textContent = !st.encrypted
+      ? 'Your keys are stored unencrypted in this browser profile. Anyone who can read this Windows account\'s Brave profile folder could read them. Choose a passphrase to encrypt them (at least 8 characters). After each browser restart you unlock once here.'
+      : st.unlocked
+        ? 'Your keys are encrypted and unlocked. They lock again when you close Brave. To remove encryption, enter your passphrase and press \u201cRemove encryption\u201d.'
+        : 'Your keys are encrypted and locked. Enter your passphrase to use providers that need a key (MyMemory still works without unlocking).';
+  }
+
+  async function afterSecurityChange(message) {
+    $('secPass').value = '';
+    $('secPass2').value = '';
+    await renderSecurity();
+    await loadSecretsIntoForm();
+    toast(message);
   }
 
   /* ---------- Saved words ---------- */
@@ -268,12 +323,38 @@
     $('mymemoryEmail').addEventListener('change', async (e) => {
       const v = e.target.value.trim();
       if (!validEmail(v)) { toast('That email address looks invalid.'); return; }
-      await BT.storage.saveSecrets({ mymemoryEmail: v });
-      toast('Saved');
+      try { await BT.storage.saveSecrets({ mymemoryEmail: v }); toast('Saved'); } catch (err) { toast(err.message || 'Could not save.'); }
     });
-    $('ltSave').addEventListener('click', saveLibre);
-    $('googleSave').addEventListener('click', saveGoogle);
-    $('msSave').addEventListener('click', saveMicrosoft);
+    // Wrap so a locked/failed save shows a message instead of failing silently.
+    const safe = (fn) => async () => { try { await fn(); } catch (err) { toast(err.message || 'Something went wrong.'); } };
+    $('ltSave').addEventListener('click', safe(saveLibre));
+    $('googleSave').addEventListener('click', safe(saveGoogle));
+    $('msSave').addEventListener('click', safe(saveMicrosoft));
+    $('gmSave').addEventListener('click', safe(saveGemini));
+
+    renderSecurity();
+    $('secEnable').addEventListener('click', safe(async () => {
+      const p = $('secPass').value;
+      if (p !== $('secPass2').value) { toast('The two passphrases do not match.'); return; }
+      $('secEnable').disabled = true;
+      try { await BT.storage.enableSecretsLock(p, $('secRemember').checked); } finally { $('secEnable').disabled = false; }
+      afterSecurityChange('Keys encrypted');
+    }));
+    $('secUnlock').addEventListener('click', safe(async () => {
+      $('secUnlock').disabled = true;
+      try { await BT.storage.unlockSecrets($('secPass').value, $('secRemember').checked); } finally { $('secUnlock').disabled = false; }
+      afterSecurityChange('Unlocked until you close the browser');
+    }));
+    $('secLock').addEventListener('click', safe(async () => { await BT.storage.lockSecrets(); afterSecurityChange('Locked'); }));
+    $('secDisable').addEventListener('click', safe(async () => {
+      await BT.storage.disableSecretsLock($('secPass').value);
+      afterSecurityChange('Encryption removed');
+    }));
+    $('secWipe').addEventListener('click', safe(async () => {
+      if (!confirm('Delete all saved API keys and any encryption?')) return;
+      await BT.storage.wipeSecrets();
+      afterSecurityChange('All saved keys removed');
+    }));
     $('test').addEventListener('click', testProvider);
 
     $('rate').addEventListener('input', (e) => { $('rateOut').textContent = Number(e.target.value).toFixed(1) + '×'; });

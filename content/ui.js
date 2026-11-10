@@ -216,7 +216,7 @@
   function setError(err) {
     const btns = h('div', { class: 'btns' });
     if (err.retryable !== false) btns.append(h('button', { class: 'btn primary', type: 'button', text: 'Retry', onclick: run }));
-    if (['NOT_CONFIGURED', 'AUTH', 'QUOTA'].includes(err.code)) {
+    if (['NOT_CONFIGURED', 'AUTH', 'QUOTA', 'LOCKED'].includes(err.code)) {
       btns.append(h('button', { class: 'btn', type: 'button', text: 'Open settings', onclick: () => send({ type: BT.MSG.OPEN_OPTIONS }) }));
     }
     m.transBody.replaceChildren(h('div', { class: 'error', role: 'alert' }, h('div', { text: err.message || 'Translation failed.' }), btns));

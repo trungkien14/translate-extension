@@ -12,7 +12,7 @@
     ACTIVATE: 'bt/activate' // service worker -> content script
   };
 
-  BT.KEYS = { SETTINGS: 'settings', SECRETS: 'secrets', HISTORY: 'history', WORDS: 'words' };
+  BT.KEYS = { SETTINGS: 'settings', SECRETS: 'secrets', HISTORY: 'history', WORDS: 'words', SECRETS_ENC: 'secretsEnc' };
 
   BT.MAX_SELECTION_CHARS = 5000;
 
@@ -24,7 +24,8 @@
     theme: 'system', // system | light | dark
     provider: 'mymemory', // mymemory | libretranslate | google
     providerConfig: {
-      libretranslate: { url: '' } // non-secret; API key lives in secrets
+      libretranslate: { url: '' }, // non-secret; API key lives in secrets
+      gemini: { model: 'gemini-3.5-flash' } // model names change; user-editable
     },
     tts: { voices: {}, rate: 1 }, // voices: { en: voiceURI, ... }
     history: { enabled: true, limit: 200 },
@@ -32,5 +33,5 @@
   };
 
   // Secrets are kept in a separate key so content scripts never read them.
-  BT.DEFAULT_SECRETS = { mymemoryEmail: '', libretranslateKey: '', googleKey: '', microsoftKey: '', microsoftRegion: '' };
+  BT.DEFAULT_SECRETS = { mymemoryEmail: '', libretranslateKey: '', googleKey: '', microsoftKey: '', microsoftRegion: '', geminiKey: '' };
 })();

@@ -72,7 +72,10 @@ kbd { font: 12px var(--bt-font); padding: 1px 6px; border: 1px solid var(--bt-bo
 .history .h-meta { font-size: 11.5px; color: var(--bt-muted); margin-top: 2px; }
 .history .btn { height: 30px; padding: 0 var(--bt-s3); font-size: 12.5px; }
 
-.btn-group { display: inline-flex; gap: var(--bt-s2); }
+.btn-group { display: inline-flex; flex-wrap: wrap; gap: var(--bt-s2); }
+.sec-note { margin-top: var(--bt-s3); }
+#security .btn.danger { margin-top: var(--bt-s2); }
+#security [hidden] { display: none; }
 .history .ipa { color: var(--bt-muted); font-weight: 400; margin-left: var(--bt-s2); }
 
 .toast { position: fixed; top: 16px; right: 16px; background: var(--bt-text); color: var(--bt-bg); padding: 8px 14px; border-radius: var(--bt-radius-sm); box-shadow: var(--bt-shadow); font-size: 13px; z-index: 10; animation: pop .18s var(--bt-ease); }

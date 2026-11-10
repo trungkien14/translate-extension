@@ -51,6 +51,7 @@
         <label for="provider">Provider</label>
         <select id="provider">
           <option value="mymemory">MyMemory — works without a key (default)</option>
+          <option value="gemini">Gemini — free key from Google AI Studio, best for phrases</option>
           <option value="libretranslate">LibreTranslate — your own server</option>
           <option value="google">Google Cloud Translation — API key, billing required</option>
           <option value="microsoft">Microsoft Translator — API key (Azure account)</option>
@@ -75,6 +76,14 @@
         <button class="btn" id="googleSave" type="button">Save key</button>
       </div>
 
+      <div class="provider-box" data-provider="gemini" hidden>
+        <p class="hint">Create a key in Google AI Studio (aistudio.google.com → Get API key) with a normal Google account. Google lists a free tier without billing. Privacy: on the free tier, Google may use the text you send to improve its products. Do not translate confidential text with it.</p>
+        <div class="field"><label for="gmKey">API key</label><input type="password" id="gmKey" autocomplete="off"></div>
+        <div class="field"><label for="gmModel">Model</label><input type="text" id="gmModel" autocomplete="off" placeholder="gemini-3.5-flash"></div>
+        <p class="hint">Model names change over time. If you see “model not found”, copy a current Flash model name from AI Studio.</p>
+        <button class="btn" id="gmSave" type="button">Save</button>
+      </div>
+
       <div class="provider-box" data-provider="microsoft" hidden>
         <p class="hint">Create a Translator resource in the Azure portal (Microsoft's pricing page lists a free tier of 2 million characters per month; an Azure account is required). Copy its key here. If your resource is regional (not “Global”), also enter its region, e.g. southeastasia.</p>
         <div class="field"><label for="msKey">API key</label><input type="password" id="msKey" autocomplete="off"></div>
@@ -86,6 +95,25 @@
         <button class="btn primary" id="test" type="button">Test connection</button>
         <span id="testResult" class="test-result" role="status" aria-live="polite"></span>
       </div>
+    </section>
+
+    <section class="panel" id="security" aria-labelledby="h-sec">
+      <h2 id="h-sec">Security of API keys</h2>
+      <p class="hint" id="secState"></p>
+      <div class="field" id="secPassField"><label for="secPass">Passphrase</label><input type="password" id="secPass" autocomplete="new-password"></div>
+      <div class="field" id="secPass2Field"><label for="secPass2">Repeat passphrase</label><input type="password" id="secPass2" autocomplete="new-password"></div>
+      <div class="row" id="secRememberField">
+        <div class="row-text"><label for="secRemember">Remember on this device (no passphrase after restart)</label><p class="hint">Convenient, but the unlock key is then stored on disk, so encryption only stops casual reading, not someone who copies your browser profile. “Lock now” forgets it.</p></div>
+        <label class="switch"><input type="checkbox" id="secRemember"><span class="track"></span></label>
+      </div>
+      <div class="btn-group">
+        <button class="btn primary" id="secEnable" type="button">Encrypt keys</button>
+        <button class="btn primary" id="secUnlock" type="button">Unlock</button>
+        <button class="btn" id="secLock" type="button">Lock now</button>
+        <button class="btn" id="secDisable" type="button">Remove encryption</button>
+      </div>
+      <p class="hint sec-note">Saved keys are never shown again on this page; type a new one to replace it. The passphrase is not stored anywhere. If you forget it, the keys cannot be recovered: use “Remove all saved keys” and enter them again. Encryption protects keys stored on disk; it cannot protect against malware that is already running on your computer or watching your keyboard. Also keep the keys safe at their source: use a dedicated key, set a quota or budget alert, and revoke it in the provider's console if you suspect a leak.</p>
+      <button class="btn danger" id="secWipe" type="button">Remove all saved keys</button>
     </section>
 
     <section class="panel" aria-labelledby="h-voice">

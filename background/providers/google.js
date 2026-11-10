@@ -1,6 +1,6 @@
 /*
  * Google Cloud Translation Basic (v2) — VERIFIED from Google docs/pricing:
- *  - POST https://translation.googleapis.com/language/translate/v2?key=API_KEY, JSON {q, target, source?, format}
+ *  - POST https://translation.googleapis.com/language/translate/v2 with header X-goog-api-key: API_KEY, JSON {q, target, source?, format}
  *  - response data.translations[0].{translatedText, detectedSourceLanguage}
  *  - first 500,000 chars/month free, then $20 per 1M chars; a billing-enabled Cloud project is required.
  * The key is user-supplied and stored in chrome.storage.local (never in source). Restrict it in Cloud Console.
@@ -20,10 +20,11 @@ export default {
     const body = { q: text, target, format: 'text' };
     if (source && source !== 'auto') body.source = source;
 
-    const url = 'https://translation.googleapis.com/language/translate/v2?key=' + encodeURIComponent(secrets.googleKey);
+    // Key goes in a header, not the URL, so it cannot leak through URLs shown in DevTools, logs or error messages.
+    const url = 'https://translation.googleapis.com/language/translate/v2';
     const { status, data } = await fetchJson(url, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', 'X-goog-api-key': secrets.googleKey },
       body: JSON.stringify(body)
     });
 

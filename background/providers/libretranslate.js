@@ -45,7 +45,14 @@ export default {
     }
 
     const body = { q: text, source: source === 'auto' ? 'auto' : toLtCode(source), target: toLtCode(target), format: 'text' };
-    if (secrets.libretranslateKey) body.api_key = secrets.libretranslateKey;
+    if (secrets.libretranslateKey) {
+      const u = new URL(base);
+      const local = u.hostname === 'localhost' || u.hostname === '127.0.0.1' || u.hostname === '[::1]';
+      if (u.protocol !== 'https:' && !local) {
+        throw new ProviderError('NOT_CONFIGURED', 'Refusing to send your API key over plain HTTP. Use an https:// server URL (http is allowed only for localhost).');
+      }
+      body.api_key = secrets.libretranslateKey;
+    }
 
     const { status, data } = await fetchJson(base + '/translate', {
       method: 'POST',
