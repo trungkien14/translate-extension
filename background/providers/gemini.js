@@ -17,6 +17,11 @@ import { ProviderError, fetchJson } from './http.js';
 const BT = globalThis.BT;
 export const DEFAULT_MODEL = 'gemini-3.5-flash';
 
+/* Several API keys are supported (secrets.geminiKeys). Requests rotate across them, and when one key hits its quota (429) or is
+ * rejected (AUTH) the next key is tried, so a single exhausted free-tier key does not stop translation. */
+const keysOf = (secrets) => (secrets && Array.isArray(secrets.geminiKeys) ? secrets.geminiKeys.filter(Boolean) : []);
+let rotation = 0; // lost when the service worker sleeps: harmless
+
 function buildInstruction(source, target) {
   const from = source && source !== 'auto' ? `from ${BT.langName(source)} ` : '';
   return (
@@ -32,10 +37,11 @@ export default {
   name: 'Gemini',
   capabilities: { autoDetect: false, alternatives: false, maxBytes: null },
 
-  isConfigured(config, secrets) { return !!(secrets && secrets.geminiKey); },
+  isConfigured(config, secrets) { return keysOf(secrets).length > 0; },
 
   async translate({ text, source, target, config, secrets }) {
-    if (!secrets.geminiKey) {
+    const keys = keysOf(secrets);
+    if (!keys.length) {
       throw new ProviderError('NOT_CONFIGURED', 'Gemini needs an API key. Add one in Settings → Translation provider.');
     }
     const model = ((config && config.model) || DEFAULT_MODEL).trim();
@@ -49,6 +55,7 @@ export default {
     // Thinking off/minimal for speed (translation needs no reasoning). Gemini 3.x cannot fully disable it, so "minimal";
     // 2.5 Flash accepts budget 0. Other models get no thinkingConfig.
     const thinking = /^gemini-3/.test(model) ? { thinkingLevel: 'minimal' } : /^gemini-2\.5-flash/.test(model) ? { thinkingBudget: 0 } : null;
+    const attempt = async (key) => { // one full request with one key
     const send = (withThinking) => {
       const b = { ...body, generationConfig: { ...body.generationConfig } };
       if (withThinking && thinking) b.generationConfig.thinkingConfig = thinking;
@@ -56,7 +63,7 @@ export default {
         `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`,
         {
           method: 'POST',
-          headers: { 'x-goog-api-key': secrets.geminiKey, 'Content-Type': 'application/json' },
+          headers: { 'x-goog-api-key': key, 'Content-Type': 'application/json' },
           body: JSON.stringify(b),
           timeoutMs: 20000
         }
@@ -81,5 +88,19 @@ export default {
     if (!out) throw new ProviderError('BAD_RESPONSE', 'Gemini returned no translation (the text may have been blocked). Try again or choose another provider.', { status });
 
     return { text: out, detectedSource: null, alternatives: [] };
+    };
+
+    const start = rotation++ % keys.length;
+    let lastErr;
+    for (let i = 0; i < keys.length; i++) {
+      try {
+        return await attempt(keys[(start + i) % keys.length]);
+      } catch (e) {
+        lastErr = e;
+        // Only quota and key problems move on to the next key; other errors would be the same with any key.
+        if (!(e instanceof ProviderError) || (e.code !== 'QUOTA' && e.code !== 'AUTH')) throw e;
+      }
+    }
+    throw lastErr;
   }
 };

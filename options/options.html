@@ -62,7 +62,9 @@
 
       <div class="provider-box" data-provider="gemini" hidden>
         <p class="hint">Create a key in Google AI Studio (aistudio.google.com → Get API key) with a normal Google account. Google lists a free tier without billing. Privacy: on the free tier, Google may use the text you send to improve its products. Do not translate confidential text with it.</p>
-        <div class="field"><label for="gmKey">API key</label><input type="password" id="gmKey" autocomplete="off"></div>
+        <p class="hint" id="gmKeysHint">You can add several keys (up to 10, e.g. from different Google accounts or projects). Translations rotate across them, and when one key reaches its quota or is rejected, the next one is used automatically.</p>
+        <ul id="gmKeyList" class="history"></ul>
+        <div class="field"><label for="gmKey">Add an API key</label><input type="password" id="gmKey" autocomplete="off"></div>
         <div class="field"><label for="gmModel">Model</label><input type="text" id="gmModel" autocomplete="off" placeholder="gemini-3.5-flash"></div>
         <p class="hint">Model names change over time. If you see “model not found”, copy a current Flash model name from AI Studio.</p>
         <button class="btn" id="gmSave" type="button">Save</button>

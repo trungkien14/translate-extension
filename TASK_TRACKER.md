@@ -55,6 +55,11 @@ desk-reviewed", NOT "verified in the browser". Verification is tracked in sectio
 - [ ] Verify in Brave: Settings shows only MyMemory and Gemini; no console errors on the options page; Test connection works for both; an old stored provider falls back to MyMemory
 - [ ] Delete background/providers/google.js, microsoft.js, libretranslate.js manually (assistant has no delete tool)
 
+## 5f. Gemini multi API key (2026-11-10) — Node mock tests pass, NOT run in Brave
+- [x] constants.js (`geminiKeys`, `MAX_GEMINI_KEYS = 10`), storage.js (migrates old `geminiKey`, dedupe, cap), gemini.js (round-robin + failover on QUOTA/AUTH), options (key list showing last 4 chars, add/remove)
+- [x] Mock tests: rotation across keys, failover on 429, QUOTA when all keys exhausted, no keys -> NOT_CONFIGURED, legacy key migration, cap 10
+- [ ] Verify in Brave: add 2+ keys, list shows "Key N · …xxxx", Remove works, Test connection works, an invalid first key falls through to a valid one, encrypted/locked state still manages keys
+
 ## 6. Missing / to do
 - [ ] Extension icons (PNG 16/48/128) + `icons` and `action.default_icon` in manifest (needs PNG files; text tools cannot create binaries)
 - [x] Provider code for Gemini and Microsoft was written earlier; Microsoft has since been removed (see 5e).

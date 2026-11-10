@@ -64,6 +64,15 @@
     if (remember) await chrome.storage.local.set({ [REMEMBER_KEY]: b64(raw) });
   }
 
+  /** Fills defaults, and migrates the old single `geminiKey` into the `geminiKeys` list (deduplicated, capped). */
+  function normSecrets(o) {
+    const out = { ...BT.DEFAULT_SECRETS, ...(o || {}) };
+    const list = (Array.isArray(out.geminiKeys) ? out.geminiKeys : []).concat(out.geminiKey ? [out.geminiKey] : []);
+    out.geminiKeys = [...new Set(list.map((k) => String(k).trim()).filter(Boolean))].slice(0, BT.MAX_GEMINI_KEYS || 10);
+    delete out.geminiKey;
+    return out;
+  }
+
   const storage = {
     deepMerge,
 
@@ -89,12 +98,12 @@
       const enc = await readEnc();
       if (!enc) {
         const r = await chrome.storage.local.get(KEYS.SECRETS);
-        return { ...BT.DEFAULT_SECRETS, ...(r[KEYS.SECRETS] || {}) };
+        return normSecrets(r[KEYS.SECRETS]);
       }
       const raw = await sessionRaw();
       if (!raw) throw lockedError();
       try {
-        return { ...BT.DEFAULT_SECRETS, ...(await decryptJson(raw, enc)) };
+        return normSecrets(await decryptJson(raw, enc));
       } catch (e) {
         await storage.lockSecrets();
         throw lockedError();
@@ -102,7 +111,7 @@
     },
     async saveSecrets(patch) {
       const enc = await readEnc();
-      const merged = { ...(await storage.getSecrets()), ...patch };
+      const merged = normSecrets({ ...(await storage.getSecrets()), ...patch });
       // Keep only the fields that still exist: keys of removed providers (Google, Microsoft, LibreTranslate) are erased on the next save.
       const next = {};
       for (const k of Object.keys(BT.DEFAULT_SECRETS)) next[k] = merged[k] != null ? merged[k] : BT.DEFAULT_SECRETS[k];

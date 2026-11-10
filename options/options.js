@@ -67,25 +67,50 @@
   async function loadSecretsIntoForm() {
     let s = null;
     try { s = await BT.storage.getSecrets(); } catch (e) { s = null; } // null = locked
-    // Key fields are write-only: a saved key is never put back into the page.
-    const mask = (id, has) => {
-      const input = $(id);
-      if (!input.dataset.ph) input.dataset.ph = input.placeholder || '';
-      input.value = '';
-      input.placeholder = s === null ? 'Locked \u2014 unlock under Security below' : has ? '\u2022\u2022\u2022\u2022\u2022\u2022\u2022\u2022 saved \u2014 type to replace' : input.dataset.ph;
-    };
-    mask('gmKey', s && s.geminiKey);
+    // Key fields are write-only: a saved key is never put back into the page (the list shows only its last 4 characters).
+    const gm = $('gmKey');
+    if (!gm.dataset.ph) gm.dataset.ph = gm.placeholder || '';
+    gm.value = '';
+    gm.placeholder = s === null ? 'Locked \u2014 unlock under Security below' : gm.dataset.ph;
+    renderGeminiKeys(s ? s.geminiKeys : null);
     $('mymemoryEmail').value = (s && s.mymemoryEmail) || '';
     $('gmModel').value = (settings.providerConfig.gemini && settings.providerConfig.gemini.model) || '';
   }
 
   function validEmail(v) { return !v || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v); }
 
+  /** Lists saved Gemini keys without revealing them: only the position and the last 4 characters are shown. */
+  function renderGeminiKeys(list) {
+    const ul = $('gmKeyList');
+    ul.textContent = '';
+    if (list === null) { ul.append(el('li', null, el('div', { class: 'h-body' }, el('div', { class: 'h-meta', text: 'Locked \u2014 unlock under Security below to manage saved keys.' })))); return; }
+    if (!list.length) { ul.append(el('li', null, el('div', { class: 'h-body' }, el('div', { class: 'h-meta', text: 'No keys saved yet.' })))); return; }
+    list.forEach((k, i) => {
+      const tail = k.length >= 12 ? '\u2026' + k.slice(-4) : '';
+      const del = el('button', { class: 'btn danger', type: 'button', text: 'Remove' });
+      del.addEventListener('click', async () => {
+        try {
+          const cur = (await BT.storage.getSecrets()).geminiKeys;
+          cur.splice(i, 1);
+          await BT.storage.saveSecrets({ geminiKeys: cur });
+          await loadSecretsIntoForm();
+          toast('Key removed');
+        } catch (err) { toast(err.message || 'Could not remove the key.'); }
+      });
+      ul.append(el('li', null, el('div', { class: 'h-body' }, el('div', { class: 'h-src', text: `Key ${i + 1}${tail ? ' \u00b7 ' + tail : ''}` })), del));
+    });
+  }
+
   async function saveGemini() {
     const model = $('gmModel').value.trim() || 'gemini-3.5-flash';
     if (!/^[A-Za-z0-9._-]+$/.test(model)) { toast('That model name looks invalid.'); return; }
     const k = $('gmKey').value.trim();
-    if (k) await BT.storage.saveSecrets({ geminiKey: k });
+    if (k) {
+      const cur = (await BT.storage.getSecrets()).geminiKeys;
+      if (cur.includes(k)) toast('That key is already saved.');
+      else if (cur.length >= BT.MAX_GEMINI_KEYS) { toast(`You can save up to ${BT.MAX_GEMINI_KEYS} keys. Remove one first.`); return; }
+      else await BT.storage.saveSecrets({ geminiKeys: cur.concat([k]) });
+    }
     await save({ providerConfig: { gemini: { model } } }, true);
     await loadSecretsIntoForm();
     toast('Gemini settings saved');

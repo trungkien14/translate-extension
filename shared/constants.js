@@ -32,5 +32,6 @@
   };
 
   // Secrets are kept in a separate key so content scripts never read them.
-  BT.DEFAULT_SECRETS = { mymemoryEmail: '', geminiKey: '' };
+  BT.DEFAULT_SECRETS = { mymemoryEmail: '', geminiKeys: [] }; // geminiKeys: up to BT.MAX_GEMINI_KEYS keys, used in rotation
+  BT.MAX_GEMINI_KEYS = 10;
 })();
