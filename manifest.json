@@ -1,0 +1,50 @@
+{
+  "manifest_version": 3,
+  "name": "Brave Translate",
+  "version": "0.1.0",
+  "description": "Select text on any page to translate it instantly, with dictionary details and pronunciation.",
+  "minimum_chrome_version": "116",
+  "permissions": ["storage", "offscreen"],
+  "host_permissions": [
+    "https://api.mymemory.translated.net/*",
+    "https://api.dictionaryapi.dev/*",
+    "https://translation.googleapis.com/*",
+    "https://api.cognitive.microsofttranslator.com/*"
+  ],
+  "optional_host_permissions": ["https://*/*", "http://*/*"],
+  "background": {
+    "service_worker": "background/service-worker.js",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": [
+        "shared/constants.js",
+        "shared/languages.js",
+        "shared/storage.js",
+        "content/styles.js",
+        "content/tts.js",
+        "content/selection.js",
+        "content/ui.js",
+        "content/main.js"
+      ],
+      "run_at": "document_idle",
+      "all_frames": false
+    }
+  ],
+  "action": {
+    "default_title": "Brave Translate",
+    "default_popup": "popup/popup.html"
+  },
+  "options_ui": {
+    "page": "options/options.html",
+    "open_in_tab": true
+  },
+  "commands": {
+    "activate-translation": {
+      "suggested_key": { "default": "Alt+Shift+T" },
+      "description": "Translate the current text selection"
+    }
+  }
+}

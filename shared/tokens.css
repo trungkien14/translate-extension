@@ -1,0 +1,36 @@
+/* Design tokens for extension pages (popup/options). The content-script modal mirrors these in content/styles.js. */
+:root {
+  --bt-font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans JP", "Noto Sans SC", "Noto Sans KR", "Yu Gothic UI", "Microsoft YaHei UI", "Malgun Gothic", sans-serif;
+  --bt-bg: #ffffff;
+  --bt-surface: #f5f6f8;
+  --bt-surface-2: #eceef2;
+  --bt-text: #14161a;
+  --bt-muted: #6a7280;
+  --bt-border: #e3e5ea;
+  --bt-accent: #4f46e5;
+  --bt-accent-soft: #eceafd;
+  --bt-accent-text: #ffffff;
+  --bt-danger: #c2362b;
+  --bt-danger-soft: #fdecea;
+  --bt-ok: #1f8a4c;
+  --bt-radius-sm: 8px;
+  --bt-radius: 12px;
+  --bt-radius-lg: 16px;
+  --bt-s1: 4px; --bt-s2: 8px; --bt-s3: 12px; --bt-s4: 16px; --bt-s5: 24px; --bt-s6: 32px;
+  --bt-shadow: 0 1px 2px rgba(16, 20, 28, .06), 0 8px 24px rgba(16, 20, 28, .12);
+  --bt-ease: cubic-bezier(.2, .7, .2, 1);
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bt-bg: #1b1d22; --bt-surface: #24272e; --bt-surface-2: #2d3139; --bt-text: #eceef2;
+    --bt-muted: #9aa1ad; --bt-border: #343841; --bt-accent: #8b8dfc; --bt-accent-soft: #2a2b4a;
+    --bt-accent-text: #14161a; --bt-danger: #ff8a80; --bt-danger-soft: #3a2422; --bt-ok: #5ad08a;
+    --bt-shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"] {
+  --bt-bg: #1b1d22; --bt-surface: #24272e; --bt-surface-2: #2d3139; --bt-text: #eceef2;
+  --bt-muted: #9aa1ad; --bt-border: #343841; --bt-accent: #8b8dfc; --bt-accent-soft: #2a2b4a;
+  --bt-accent-text: #14161a; --bt-danger: #ff8a80; --bt-danger-soft: #3a2422; --bt-ok: #5ad08a;
+  --bt-shadow: 0 1px 2px rgba(0,0,0,.4), 0 8px 24px rgba(0,0,0,.5);
+}

@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brave Translate — Settings</title>
+  <link rel="stylesheet" href="../shared/tokens.css">
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <div class="page">
+    <header class="page-head">
+      <h1>Brave Translate</h1>
+      <p class="muted">Settings are saved automatically.</p>
+      <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    </header>
+
+    <section class="panel" aria-labelledby="h-general">
+      <h2 id="h-general">General</h2>
+      <div class="row">
+        <div class="row-text"><label for="enabled">Selection popup</label><p class="hint">Show the floating button after you select text on a page.</p></div>
+        <label class="switch"><input type="checkbox" id="enabled"><span class="track"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-text"><label for="theme">Theme</label></div>
+        <select id="theme">
+          <option value="system">Match system</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="h-lang">
+      <h2 id="h-lang">Languages</h2>
+      <div class="row">
+        <div class="row-text"><label for="autoDetect">Detect source language automatically</label><p class="hint">Recommended. Turn off to always translate from a fixed language.</p></div>
+        <label class="switch"><input type="checkbox" id="autoDetect"><span class="track"></span></label>
+      </div>
+      <div class="lang-grid">
+        <div class="field"><label for="sourceLang">Source</label><select id="sourceLang"></select></div>
+        <button class="btn swap" id="swap" type="button" title="Swap languages" aria-label="Swap languages">⇄</button>
+        <div class="field"><label for="targetLang">Target</label><select id="targetLang"></select></div>
+      </div>
+      <p class="hint" id="swapHint" hidden>Swapping needs a fixed source language. Auto-detect was turned off for you.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="h-provider">
+      <h2 id="h-provider">Translation provider</h2>
+      <div class="field">
+        <label for="provider">Provider</label>
+        <select id="provider">
+          <option value="mymemory">MyMemory — works without a key (default)</option>
+          <option value="libretranslate">LibreTranslate — your own server</option>
+          <option value="google">Google Cloud Translation — API key, billing required</option>
+          <option value="microsoft">Microsoft Translator — API key (Azure account)</option>
+        </select>
+      </div>
+
+      <div class="provider-box" data-provider="mymemory">
+        <p class="hint">Free anonymous quota is about 5,000 characters per day. Adding an email raises it to about 50,000 per day (MyMemory's published limits). The email is sent to MyMemory with each request.</p>
+        <div class="field"><label for="mymemoryEmail">Email (optional)</label><input type="email" id="mymemoryEmail" autocomplete="off" placeholder="you@example.com"></div>
+      </div>
+
+      <div class="provider-box" data-provider="libretranslate" hidden>
+        <p class="hint">LibreTranslate is free only when self-hosted. The public libretranslate.com needs a paid API key. Saving asks your browser for permission to contact the server.</p>
+        <div class="field"><label for="ltUrl">Server URL</label><input type="url" id="ltUrl" autocomplete="off" placeholder="http://localhost:5000"></div>
+        <div class="field"><label for="ltKey">API key (if your server requires one)</label><input type="password" id="ltKey" autocomplete="off"></div>
+        <button class="btn" id="ltSave" type="button">Save &amp; grant access</button>
+      </div>
+
+      <div class="provider-box" data-provider="google" hidden>
+        <p class="hint">Needs a Google Cloud project with billing enabled and the Cloud Translation API on. The key is stored only in this browser profile and is never read by web pages.</p>
+        <div class="field"><label for="googleKey">API key</label><input type="password" id="googleKey" autocomplete="off"></div>
+        <button class="btn" id="googleSave" type="button">Save key</button>
+      </div>
+
+      <div class="provider-box" data-provider="microsoft" hidden>
+        <p class="hint">Create a Translator resource in the Azure portal (Microsoft's pricing page lists a free tier of 2 million characters per month; an Azure account is required). Copy its key here. If your resource is regional (not “Global”), also enter its region, e.g. southeastasia.</p>
+        <div class="field"><label for="msKey">API key</label><input type="password" id="msKey" autocomplete="off"></div>
+        <div class="field"><label for="msRegion">Region (leave empty for a global resource)</label><input type="text" id="msRegion" autocomplete="off" placeholder="southeastasia"></div>
+        <button class="btn" id="msSave" type="button">Save key</button>
+      </div>
+
+      <div class="test">
+        <button class="btn primary" id="test" type="button">Test connection</button>
+        <span id="testResult" class="test-result" role="status" aria-live="polite"></span>
+      </div>
+    </section>
+
+    <section class="panel" aria-labelledby="h-voice">
+      <h2 id="h-voice">Pronunciation</h2>
+      <p class="hint">The speaker buttons use your browser's text-to-speech voices. This is synthesized speech, not a recording of a native speaker. Dictionary recordings, when available, are labeled as such.</p>
+      <div class="row">
+        <div class="row-text"><label for="rate">Speech speed</label></div>
+        <div class="range"><input type="range" id="rate" min="0.6" max="1.4" step="0.1"><output id="rateOut"></output></div>
+      </div>
+      <div id="voices" class="voices"></div>
+      <p class="hint" id="voicesEmpty" hidden>No voices were reported by this browser. Install system voices in your OS language settings.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="h-keys">
+      <h2 id="h-keys">Keyboard shortcut</h2>
+      <p class="hint">Default: <kbd>Alt</kbd> + <kbd>Shift</kbd> + <kbd>T</kbd> translates the current selection. Brave does not let extensions open its shortcut page from a link, so paste this address into the address bar to change it:</p>
+      <div class="copy-line"><code id="shortcutUrl">brave://extensions/shortcuts</code><button class="btn" id="copyShortcut" type="button">Copy</button></div>
+    </section>
+
+    <section class="panel" id="words" aria-labelledby="h-words">
+      <h2 id="h-words">Saved words</h2>
+      <div class="row">
+        <div class="row-text"><label for="wordsEnabled">Save looked-up words automatically</label><p class="hint">Single words only. Each entry stores the word, its translation and, for English words, the IPA pronunciation. Stored only on this device.</p></div>
+        <label class="switch"><input type="checkbox" id="wordsEnabled"><span class="track"></span></label>
+      </div>
+      <div class="section-head">
+        <span id="wordsCount" class="muted"></span>
+        <span class="btn-group"><button class="btn" id="wordsExport" type="button">Export CSV</button><button class="btn danger" id="wordsClear" type="button">Clear all</button></span>
+      </div>
+      <ul id="wordsList" class="history"></ul>
+      <p id="wordsEmpty" class="muted center" hidden>No saved words yet. Look up a word on any page and it will appear here.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="h-hist">
+      <h2 id="h-hist">History</h2>
+      <div class="row">
+        <div class="row-text"><label for="histEnabled">Save translation history</label><p class="hint">Stored only on this device. It is never sent anywhere.</p></div>
+        <label class="switch"><input type="checkbox" id="histEnabled"><span class="track"></span></label>
+      </div>
+      <div class="row">
+        <div class="row-text"><label for="histLimit">Maximum entries</label></div>
+        <select id="histLimit">
+          <option value="50">50</option><option value="100">100</option><option value="200">200</option><option value="500">500</option>
+        </select>
+      </div>
+      <div class="section-head"><span id="histCount" class="muted"></span><button class="btn danger" id="histClear" type="button">Clear all</button></div>
+      <ul id="histList" class="history"></ul>
+      <p id="histEmpty" class="muted center" hidden>No saved translations yet.</p>
+    </section>
+
+    <section class="panel" aria-labelledby="h-limits">
+      <h2 id="h-limits">Where it does not work</h2>
+      <p class="hint">Extensions cannot run on brave:// and chrome:// pages, the Chrome Web Store, other extensions' pages, and the built-in PDF viewer. Local files (file://) are not supported in this version.</p>
+    </section>
+  </div>
+
+  <script src="../shared/constants.js"></script>
+  <script src="../shared/languages.js"></script>
+  <script src="../shared/storage.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

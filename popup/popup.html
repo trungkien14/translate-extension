@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Brave Translate</title>
+  <link rel="stylesheet" href="../shared/tokens.css">
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">Brave Translate</div>
+    <label class="switch" title="Show the floating button when text is selected">
+      <input type="checkbox" id="enabled">
+      <span class="track"></span>
+      <span class="switch-label">Selection popup</span>
+    </label>
+    <button class="icon-btn" id="openSettings" title="Settings" aria-label="Settings">⚙</button>
+  </header>
+
+  <main>
+    <section class="card">
+      <textarea id="input" rows="3" placeholder="Type or paste text to translate…" maxlength="5000"></textarea>
+      <div class="bar">
+        <select id="target" aria-label="Target language"></select>
+        <button class="btn primary" id="go">Translate</button>
+      </div>
+      <div id="result" class="result" hidden></div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <h2>Recent</h2>
+        <button class="link" id="clear" hidden>Clear all</button>
+      </div>
+      <ul id="history" class="history"></ul>
+      <p id="empty" class="muted" hidden>Nothing here yet. Select text on a page to start.</p>
+    </section>
+  </main>
+
+  <footer class="foot">
+    <button class="link" id="openWords" type="button">Saved words</button>
+  </footer>
+
+  <script src="../shared/constants.js"></script>
+  <script src="../shared/languages.js"></script>
+  <script src="../shared/storage.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
