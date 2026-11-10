@@ -24,6 +24,8 @@ Decisions marked **LOCKED** should not be reversed without a strong, written rea
 7b. **LOCKED — API key protection:** optional passphrase encryption (AES-GCM + PBKDF2-SHA256 600k) in shared/storage.js; ciphertext in `secretsEnc`,
     unlock key only in chrome.storage.session; locked state throws code `LOCKED` (MyMemory still works). Key inputs are write-only. Full threat model: docs/SECURITY.md.
     Do NOT move secrets to storage.sync. Do NOT show saved keys back in the UI.
+7c. Optional "Remember on this device": the derived AES key is also written to storage.local (`secretsKeyRemembered`) so restarts need no passphrase. Deliberate trade-off
+    (convenience vs. disk-at-rest protection); off by default; removed by lockSecrets/wipe/disable/failed decrypt. Do not make it the default.
 8. History: newest first, de-duplicated by (text, target), capped by `settings.history.limit` (default 200).
    Saved by the worker when `save:true`. Text only goes to the selected provider, never elsewhere.
 
@@ -31,16 +33,17 @@ Decisions marked **LOCKED** should not be reversed without a strong, written rea
 9. **MyMemory is the default** because it works with no key. 500-byte `q` limit (we chunk), 5,000 chars/day anonymous,
    ~50,000 with `de` email. No language auto-detect used -> local detection (detect.js). Quality is "translation memory"
    quality; can return noisy results. This is a convenience default, not a commercial-grade recommendation.
+9b. translate.js sends up to 3 chunks concurrently (order preserved). Safe because providers with chunking (MyMemory) get a concrete source language; with source 'auto' and several chunks the first goes alone.
 10. LibreTranslate: only free when self-hosted; libretranslate.com needs a paid key. Server URL is user-supplied, so
     its origin is requested at runtime via `optional_host_permissions` (chrome.permissions.request from options page).
-11. Google Cloud Translation Basic v2: requires billing-enabled project; key stored locally by user. Never in source.
+11. Google Cloud Translation Basic v2: requires billing-enabled project; key stored locally by user. Never in source. Key is sent in the `X-goog-api-key` header, not the URL (not re-verified with a live call by the assistant).
 12. Microsoft Translator (Azure AI Translator v3.0): implemented in background/providers/microsoft.js. Verified from Microsoft Learn: POST
     api.cognitive.microsofttranslator.com/translate?api-version=3.0&to=..; headers Ocp-Apim-Subscription-Key (+ Ocp-Apim-Subscription-Region, required
     for regional resources); body [{"Text":..}]. Pricing page lists free F0 = 2M chars/month (one third-party source says the free period may be
     limited to 12 months: re-check at signup). NOT verified by a live call: detectedLanguage field, zh-Hans/zh-Hant codes. Key + region are in `secrets`.
 12b. Gemini (Google AI Studio): providers/gemini.js. REST format verified from ai.google.dev docs. Free tier / no card / data-use-for-improvement verified only via
     third-party summaries + a pricing-page excerpt: re-check on ai.google.dev. Model name is user-editable because it changes. autoDetect=false (local detection).
-    Prompt treats page text as data, not instructions; output shown with textContent only.
+    Prompt treats page text as data, not instructions; output shown with textContent only. Thinking is minimised for speed: `thinkingLevel: minimal` (gemini-3*), `thinkingBudget: 0` (gemini-2.5-flash*), nothing for other models; one retry without it on HTTP 400 mentioning thinking.
 13. Dictionary: Free Dictionary API (api.dictionaryapi.dev), English only, keyless, rate-limited, sometimes unreliable.
     UI shows dictionary details only for English words (or for the English translation of a single foreign word).
     It supplies IPA, definitions, examples, synonyms, and some recorded audio. It does NOT provide translations.

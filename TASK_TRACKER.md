@@ -45,6 +45,13 @@ desk-reviewed", NOT "verified in the browser". Verification is tracked in sectio
 - [ ] Run the checklist in docs/SECURITY.md (encrypt, restart, unlock, wrong passphrase, remove encryption, wipe)
 - [ ] Re-verify provider Save buttons (LibreTranslate/Google/Gemini/Microsoft) after the write-only change
 
+## 5d. Key convenience + speed (2026-11-10) — checked by hand by the user in Brave
+- [x] "Remember on this device" (storage.js, options)
+- [x] Google key sent in `X-goog-api-key` header instead of URL
+- [x] Parallel chunk translation (up to 3) in translate.js
+- [x] Gemini thinking minimised (gemini.js)
+- [ ] Not recorded as verified: Google Translate with a real key after the header change; Microsoft/LibreTranslate; the full docs/SECURITY.md checklist
+
 ## 6. Missing / to do
 - [ ] Extension icons (PNG 16/48/128) + `icons` and `action.default_icon` in manifest (needs PNG files; text tools cannot create binaries)
 - [x] Microsoft Translator provider written (docs researched; NOT run). [ ] Verify with a real Azure key: translation, auto-detect field, Chinese codes, regional key error

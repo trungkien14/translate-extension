@@ -1,5 +1,14 @@
 # CHANGELOG
 
+## 2026-11-10 — Key convenience, Google key header, speed (checked by hand by the user in Brave)
+- `shared/storage.js`, `options/options.html`, `options/options.js`: optional **Remember on this device** — the derived unlock key is also kept in storage.local
+  (`secretsKeyRemembered`) so no passphrase is needed after a restart. `lockSecrets()` (and wipe/disable/wrong-key) removes it. Trade-off documented in README and docs/SECURITY.md.
+- `background/providers/google.js`: API key moved from the `?key=` URL query to the `X-goog-api-key` header.
+- `background/translate.js`: chunks are translated up to 3 in parallel (was sequential); when the source is 'auto' and there are several chunks, the first goes alone to fix the source language.
+- `background/providers/gemini.js`: thinking set to minimum (`thinkingLevel: 'minimal'` for gemini-3*, `thinkingBudget: 0` for gemini-2.5-flash*, none otherwise); one retry without it if Google answers HTTP 400 naming thinking.
+- Tests run by the assistant: `node --check`, a storage lock/remember simulation, a mock timing test (6 chunks x 300 ms: ~1800 ms -> ~603 ms) and a mock Gemini config test. Not measured against the live APIs by the assistant.
+- Docs updated: README (new "Entering API keys" section), docs/SECURITY.md, TECHNICAL_DECISIONS.md, TASK_TRACKER.md, DEVELOPMENT_STATUS.md.
+
 ## 2026-11-10 — Session 2 (completing the extension pages + docs)
 - Added: `popup/popup.css`, `popup/popup.js` (quick translate box, recent history, selection-popup toggle, settings link).
 - Added: `options/options.html`, `options.css`, `options.js` (general, languages + swap, provider settings with keys,

@@ -1,6 +1,6 @@
 # SECURITY — handling of API keys
 
-Status: implemented 2026-11-10, NOT yet run in Brave. Verify with the checklist at the end.
+Status: implemented 2026-11-10; the user hand-checked encryption, unlock and "Remember on this device" in Brave. The full checklist at the end is not recorded as run.
 
 ## What is protected, and how
 | Measure | Where | Notes |
@@ -15,6 +15,7 @@ Status: implemented 2026-11-10, NOT yet run in Brave. Verify with the checklist 
 | Sender check | background/service-worker.js | ignores messages not from this extension; no message type returns secrets |
 | No secrets in errors/logs | providers | error messages never include keys |
 | Sync not used | storage.local only | keys are not uploaded to a Google/Brave account |
+| Optional "Remember on this device" (off by default) | shared/storage.js, options/ | stores the derived unlock key in `storage.local` (`secretsKeyRemembered`) so no passphrase is needed after restart; removed by "Lock now", wipe, remove-encryption or a failed decrypt |
 
 ## Honest limits
 - Without a passphrase, keys are plaintext in the profile's storage and `chrome.storage.local` is readable by this extension's content scripts (Chrome docs: local is exposed to content scripts by default). Web pages cannot read it; local malware/other users of the Windows account can.
@@ -22,7 +23,8 @@ Status: implemented 2026-11-10, NOT yet run in Brave. Verify with the checklist 
 - A 2022 Chromium Extensions thread notes `storage.session` changes may be observable by content scripts through `onChanged` regardless of access level; the unlock key is only written when the user unlocks. Treat as a known, unverified-in-2026 caveat.
 - Old plaintext may remain in the browser's LevelDB files until compaction after encrypting/removing keys.
 - A forgotten passphrase cannot be recovered (by design). "Remove all saved keys" wipes everything.
-- Google Cloud Translation key travels in the request URL query string (per Google's documented v2 usage); other providers send it in headers/body.
+- With "Remember on this device" on, the unlock key sits on disk next to the ciphertext and is readable by content scripts like the rest of `storage.local`: this only stops casual reading, not someone who copies the profile. Keep it off if that matters.
+- Keys are sent in headers (Google: `X-goog-api-key`, Gemini: `x-goog-api-key`, Microsoft: `Ocp-Apim-Subscription-Key`) or the request body (LibreTranslate), never in URLs.
 - Provider-side safety (outside our control): use a dedicated key, set quotas/budget alerts, revoke on suspicion. Gemini free tier may use content to improve Google products.
 
 ## Verification checklist (to run in Brave)

@@ -1,11 +1,11 @@
 # DEVELOPMENT_STATUS
 
-**Last updated:** 2026-11-10 (session 2)
-**Status:** All planned source files now exist. The extension has NOT been loaded or run in Brave yet, so nothing is verified.
-**Last completed milestone:** Popup + options page written; continuity docs complete; full desk review of existing source.
+**Last updated:** 2026-11-10 (session 3)
+**Status:** The extension has been loaded in Brave. The user hand-checked the session-3 changes (key encryption + "Remember on this device", Google key header, parallel chunking, Gemini minimal thinking). The full docs/TESTING.md scenario list is not recorded as run.
+**Last completed milestone:** API-key security and speed work (see CHANGELOG 2026-11-10 "Key convenience, Google key header, speed").
 
 ## Completed (code written, desk-reviewed, NOT run)
-- Manifest V3, shared modules, service worker, translate/detect/chunk, providers (MyMemory, LibreTranslate, Google),
+- Manifest V3, shared modules, service worker, translate/detect/chunk, providers (MyMemory, LibreTranslate, Google, Gemini, Microsoft),
   dictionary (dictionaryapi.dev), offscreen audio, content script (selection, Shadow DOM UI, TTS registry), popup, options.
 
 ## In progress
@@ -13,7 +13,7 @@
 
 ## Not implemented
 - Extension icons (PNG needed; manifest has no `icons` yet).
-- Microsoft Translator provider (not researched).
+- Microsoft Translator and Google (after the header change) not verified with real keys.
 - Non-browser pronunciation provider (registry ready).
 - file:// and iframe support.
 
